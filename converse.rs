@@ -1,3 +1,6 @@
+use egui::TextBuffer;
+use crate::python;
+
 pub struct Conversations {
     pub conversations: Vec<(String, String)>,
 }
@@ -21,14 +24,16 @@ impl Conversations  {
     }
 
     pub fn send_input(conversations: &mut Conversations, input: &str) -> bool {
-        // temporary debug example
-        let gpt_output = "Washington D.C.".to_string();
-        // let gpt_output = receive_output(); // in the future let receive_output call the python file
-        conversations.push_conversation(&input, &gpt_output);
+        let input_and_output = Self::get_output(input);
+        let gpt_output = input_and_output.split_at(input.len() + 1).1;
+        conversations.push_conversation(input, gpt_output);
         true
     }
 
-    pub fn get_output() -> String {
-        "Washington D.C.".to_string()
+    pub fn get_output(input: &str) -> String {
+        match python::get_llm_output(input.as_str()) {
+            Ok(out) => out.to_string(),
+            Err(E) => format!("{input}-Error: {E}").to_string()
+        }
     }
 }
