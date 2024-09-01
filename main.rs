@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
+mod data;
 mod converse;
+mod python;
 
 use std::io::Write;
 use eframe::egui;
@@ -69,7 +71,7 @@ impl eframe::App for MyApp {
                     let conversation: bool = Conversations::send_input(&mut self.conversations, &mut self.input);
                     println!("{}", Conversations::get_last_output(&mut self.conversations));
                     if conversation {
-                        self.response = Conversations::get_output();
+                        self.response = Conversations::get_last_output(&mut self.conversations);
                     }
                 }
             });
