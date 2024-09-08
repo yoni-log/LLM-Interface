@@ -6,6 +6,7 @@ mod python;
 
 use std::io::Write;
 use eframe::egui;
+use egui::Hyperlink;
 use crate::converse::Conversations;
 
 fn main() -> eframe::Result {
@@ -30,6 +31,7 @@ pub struct MyApp {
     name: String,
     input: String,
     response: String,
+    model_name: String,
     default_response: bool,
     conversations: Conversations
 }
@@ -40,6 +42,7 @@ impl Default for MyApp {
             name: "user".to_owned(),
             input: "".to_string(),
             response: "How may I assist you today?".to_string(),
+            model_name: "Input your model tag here!".to_string(),
             default_response: true,
             conversations: Conversations::new(),
         }
@@ -56,14 +59,29 @@ impl eframe::App for MyApp {
             ui.spacing_mut().item_spacing = egui::vec2(10.0, 10.0);
             egui::widgets::global_dark_light_mode_buttons(ui);
             ui.heading("YonI Chat");
+
             ui.horizontal(|ui| {
                 let name_label = ui.label("Your name: ");
                 ui.text_edit_singleline(&mut self.name)
                     .labelled_by(name_label.id);
                 if self.conversations.conversations.is_empty() && self.name != "user" {
-                    self.response = format!("Hello {}, How may I assist you today?", self.name).to_string();
+                    self.response = format!("Hello {}, how may I assist you today?", self.name).to_string();
                 }
             });
+
+            // Get model name to download desired LLM
+            ui.horizontal(|ui| {
+                let model_name_label = ui.label("Model: ");
+                ui.text_edit_singleline(&mut self.model_name)
+                    .labelled_by(model_name_label.id);
+                if ui.button("Select").clicked() {
+                    self.conversations.model = self.model_name.clone();
+                }
+            });
+
+            ui.label("To download models, enter their tag (e.g., \"openai-community/gpt2\").");
+            ui.add(Hyperlink::from_label_and_url("Click here to browse available models!",
+                                                 "https://huggingface.co/models?pipeline_tag=text-generation"));
 
             ui.horizontal(|ui| {
                 ui.text_edit_singleline(&mut self.input);
