@@ -1,13 +1,12 @@
 use pyo3::prelude::*;
 
-pub fn get_llm_output(input: &str) -> PyResult<(String)> {
+pub fn get_llm_output(input: &str, model: &str) -> PyResult<(String)> {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {
         let script = r#"
-def llm(input_text):
-    import torch
+def llm(input_text, model):
     from transformers import AutoTokenizer, AutoModelForCausalLM
-    model_name = "gpt2"
+    model_name = model
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name)
@@ -29,7 +28,7 @@ def llm(input_text):
 
         let result: String = module
             .getattr("llm")?
-            .call1((input,))?
+            .call1((input,model))?
             .extract()?;
         println!("Result: {result}");
 
